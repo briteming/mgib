@@ -3,7 +3,6 @@ import {
   Box, Text, Badge, Stack, HStack, VStack, Image, Flex, Button,
   Tag, SimpleGrid, Spinner, useColorModeValue, useDisclosure, Link, Divider
 } from "@chakra-ui/react";
-import { FaThumbsUp, FaGrin, FaSadTear, FaHeart, FaSurprise, FaEye, FaLaugh, FaRocket } from "react-icons/fa";
 import { useInView } from "react-intersection-observer";
 import { Remarkable } from 'remarkable';
 

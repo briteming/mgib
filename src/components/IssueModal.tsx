@@ -5,6 +5,7 @@ import {
   Link, useColorModeValue, HStack, Image, Divider, Tag, Input, Textarea, useToast
 } from '@chakra-ui/react';
 import { Remarkable } from 'remarkable';
+import { useSession } from "next-auth/react";
 
 import { Issue } from "@/types/Issue";
 import { Comment } from '@/types/comment';
@@ -32,6 +33,7 @@ const EditableIssueCard = ({ issue, reloadIssues, closeModal }: {
   const [editedTitle, setEditedTitle] = useState(issue.title);
   const [editedBody, setEditedBody] = useState(issue.body);
   const toast = useToast();
+  const { data: session } = useSession();
 
   const handleEdit = () => {
     if(!editedTitle) {
@@ -140,20 +142,22 @@ const EditableIssueCard = ({ issue, reloadIssues, closeModal }: {
           ))}
         </HStack>
       </Stack>
-      <Stack w='200px' justifySelf='start'>
-        <Flex gap='12px' justify='end'>
-          {editMode ? (
-            <React.Fragment>
-              <Button colorScheme="green" onClick={handleEdit}>保存</Button>
-              <Button colorScheme="red" onClick={() => setEditMode(false)}>取消</Button>
-            </React.Fragment>
-          ) : (
-            <React.Fragment>
-              <Button colorScheme="green" onClick={() => setEditMode(true)}>編輯</Button>
-              <Button colorScheme="red" onClick={handleDelete}>刪除</Button>
-            </React.Fragment>
-          )}
-        </Flex>
+      <Stack minW='200px' justifySelf='start'>
+        {session && session.user.name == process.env.GITHUB_OWNER &&
+          <Flex gap='12px' justify='end'>
+            {editMode ? (
+              <React.Fragment>
+                <Button colorScheme="green" onClick={handleEdit}>保存</Button>
+                <Button colorScheme="red" onClick={() => setEditMode(false)}>取消</Button>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <Button colorScheme="green" onClick={() => setEditMode(true)}>編輯</Button>
+                <Button colorScheme="red" onClick={handleDelete}>刪除</Button>
+              </React.Fragment>
+            )}
+          </Flex>
+          }
         <Stack>
           <Text>User: </Text>
           <Flex gap='10px'>
