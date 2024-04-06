@@ -34,6 +34,27 @@ const EditableIssueCard = ({ issue, reloadIssues, closeModal }: {
   const toast = useToast();
 
   const handleEdit = () => {
+    if(!editedTitle) {
+      toast({
+        title: 'Failid!',
+        description: '標題不能空白',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
+      return;
+    }
+    if(editedBody.length < 30) {
+      toast({
+        title: 'Failid!',
+        description: '內容⾄少需要 30 字',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
+      return;
+    }
+
     updateIssue(token, issue.number, editedTitle, editedBody)
       .then(res => toast({
         title: 'Success!',
@@ -52,6 +73,7 @@ const EditableIssueCard = ({ issue, reloadIssues, closeModal }: {
 
     setEditMode(false);
     setTimeout(() => reloadIssues(), 1000);
+    closeModal();
   };
 
   const handleDelete = () => {
@@ -90,7 +112,7 @@ const EditableIssueCard = ({ issue, reloadIssues, closeModal }: {
             />
           ) : (
             <Link fontSize="24px" fontWeight="bold" href={issue.url}>
-              {editedTitle}
+              {issue.title}
               <Text as="span" fontSize="18px" color="gray.500">#{issue.number}</Text>
             </Link>
           )}
@@ -104,7 +126,7 @@ const EditableIssueCard = ({ issue, reloadIssues, closeModal }: {
             />
           ) : (
             <Text flexGrow='1' mt={2} noOfLines={4} maxH="80px" overflow="hidden" 
-              dangerouslySetInnerHTML={{__html: md.render(editedBody)}} 
+              dangerouslySetInnerHTML={{__html: md.render(issue.body)}} 
             />
           )}
         </Box>        
