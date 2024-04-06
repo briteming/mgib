@@ -21,9 +21,10 @@ interface IssueModalProps {
   onIssueReload: () => void;
 }
 
-const EditableIssueCard = ({ issue, reloadIssues }: { 
+const EditableIssueCard = ({ issue, reloadIssues, closeModal }: { 
   issue: Issue,
-  reloadIssues: () => void
+  reloadIssues: () => void,
+  closeModal: () => void
 }) => {
   const md = new Remarkable();
   const token = getAccessToken();
@@ -50,7 +51,7 @@ const EditableIssueCard = ({ issue, reloadIssues }: {
       }))
 
     setEditMode(false);
-    reloadIssues();
+    setTimeout(() => reloadIssues(), 1000);
   };
 
   const handleDelete = () => {
@@ -70,7 +71,8 @@ const EditableIssueCard = ({ issue, reloadIssues }: {
         isClosable: true,
       }))
 
-    reloadIssues();
+    setTimeout(() => reloadIssues(), 1000);
+    closeModal();
   };
 
   return (
@@ -260,7 +262,7 @@ const IssueModal: React.FC<IssueModalProps> = ({ issue, isOpen, onClose, onIssue
         <ModalHeader />
         <ModalCloseButton />
         <ModalBody >
-          <EditableIssueCard issue={issue} reloadIssues={onIssueReload}/>
+          <EditableIssueCard issue={issue} reloadIssues={onIssueReload} closeModal={onClose}/>
           {comments.map(comment => (
             <React.Fragment>
               <Box h='20px' w='3px' ml='100px' bg='gray' />
