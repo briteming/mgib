@@ -1,107 +1,65 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { 
-  Box, Text, Badge, Stack, HStack, VStack, Image, Flex, Button,
-  Tag, SimpleGrid, Spinner, useColorModeValue, useDisclosure, Link, Divider
-} from "@chakra-ui/react";
+import { VStack, Box, Spinner, Text } from "@chakra-ui/react";
 import { useInView } from "react-intersection-observer";
-import { Remarkable } from 'remarkable';
 
-import IssueModal from "./IssueModal";
-import { Issue } from "@/types/Issue"
+import IssueShortCard from "@/components/IssueShortCard";
+import { Issue } from "@/types/Issue";
 import { fetchIssues } from "@/api/issue";
 import { getAccessToken } from "@/utils/githubToken";
-import { formatDate, truncate } from "@/utils/stringUtils";
-import { reactionsIcons } from '@/utils/iconUtils';
 
-const IssueCard = ({ issue, reloadIssues }: { 
-  issue: Issue,
-  reloadIssues: () => void
-}) => {
-  const md = new Remarkable();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  return (
-    <Box borderWidth="1px" borderRadius="lg" overflow="hidden" w="100%" cursor="pointer"
-      p={4} bg={useColorModeValue("white", "gray.700")} onClick={onOpen}>
-      <Flex justify="space-between" align="center">
-        <Text fontSize="24px" fontWeight="bold">
-          {issue.title} <Text as="span" fontSize="18px" color="gray.500">#{issue.number}</Text>
-        </Text>
-        <Box>
-          {issue.labels.map(label => (
-            <Tag key={label.id} ml={2} color="white" bg={`#${label.color}`}>
-              {label.name}
-            </Tag>
-          ))}
-        </Box>
-      </Flex>
-      <Text mt={2} noOfLines={4} height="80px" overflow="hidden"
-        dangerouslySetInnerHTML={{__html: md.render(truncate(issue.body, 200))}}
-      />
-      <Flex mt={4} justify="space-between" alignItems="center">
-        <HStack>
-          {Object.entries(issue.reactions).map(([key, value]) => (
-            reactionsIcons[key] && value > 0 ? 
-            <Flex key={key} gap='4px' align='center' padding='2px 4px'
-              border='1px' borderRadius='2px' shadow="md">
-              {reactionsIcons[key]} {value}
-            </Flex> : null
-          ))}
-        </HStack>
-        <Text fontSize="sm">Updated at {formatDate(issue.updated_at)}</Text>
-      </Flex>
-      <IssueModal issue={issue} isOpen={isOpen} 
-        onClose={onClose} onIssueReload={reloadIssues}
-      />
-    </Box>
-  );
-};
-
+/**
+ * Component for displaying a list of GitHub issues with infinite scrolling.
+ */
 const InfiniteIssuesList = () => {
-  const token = getAccessToken();
+  const pageSize = 10; // Number of issues to fetch per request
+  const token = getAccessToken(); // Authentication token for GitHub API
   const [issues, setIssues] = useState<Issue[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const { ref, inView } = useInView();
+  const [hasMore, setHasMore] = useState(true); // Flag to check if more issues are available to fetch
+  const { ref, inView } = useInView(); // Intersection Observer hook to detect when the user has scrolled to the bottom
 
+  /**
+   * Loads more issues from the GitHub API.
+   */
   const loadMoreIssues = useCallback(async () => {
-    if (loading || !hasMore) 
-      return;
+    if (loading || !hasMore) return;
 
     setLoading(true);
-    const newIssues = await fetchIssues(token, page);
-    setIssues((prev) => [...prev, ...newIssues]);
-    setPage((prev) => prev + 1);
+    const newIssues = await fetchIssues(token, page, pageSize);
+    setIssues(prev => [...prev, ...newIssues]);
+    setPage(prev => prev + 1);
     setLoading(false);
 
-    if (newIssues.length < 10) 
-      setHasMore(false);
-  }, [page, loading, hasMore, issues.length]);
+    if (newIssues.length < pageSize) setHasMore(false); // If less than pageSize issues are returned, there are no more issues to fetch
+  }, [page, loading, hasMore, token]);
 
+  /**
+   * Reloads the issue list starting from the first page.
+   */
   const reloadIssues = async () => {
     setLoading(true);
-    setPage(1);
-    const newIssues = await fetchIssues(token, 1); // 重新从第一页开始加载
+    const newIssues = await fetchIssues(token, 1, pageSize);
     setIssues(newIssues);
+    setPage(2); // Set next page to load after reload
     setLoading(false);
-    setHasMore(newIssues.length === 10); // 假设每页有10条，如果少于10条则说明没有更多数据
+    setHasMore(newIssues.length === pageSize); // Check if there might be more issues to load
   };
 
+  // Load more issues when the bottom of the list is in view
   useEffect(() => {
     if (hasMore && inView) loadMoreIssues();
-  }, [inView]);
+  }, [inView, loadMoreIssues]);
 
   return (
     <VStack spacing="16px" padding="32px">
+      {/* Issue Cards */}
       {issues.map(issue => (
-        <IssueCard key={issue.id} issue={issue} reloadIssues={reloadIssues}/>
+        <IssueShortCard key={issue.id} issue={issue} reloadIssues={reloadIssues} />
       ))}
+      {/* Loader or End of List Text */}
       <Box ref={ref}>
-        {hasMore ? 
-          loading && <Spinner /> : 
-          <Text>No more posts</Text>
-        }
+        {hasMore ? loading && <Spinner /> : <Text>No more issues</Text>}
       </Box>
     </VStack>
   );

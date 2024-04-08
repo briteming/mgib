@@ -57,9 +57,6 @@ export const fetchIssues = async (
     state: "open",
     nocache // avoid cache
   });
-
-  console.log('fetchIssues')
-  console.log(response.data)
   // Transform each issue in the response
   return response.data.map((issue: any) => transformApiResponseToIssue(issue));
 };

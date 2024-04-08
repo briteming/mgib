@@ -5,8 +5,11 @@ export const options: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID as string,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      clientId: process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID as string,
+      clientSecret: process.env.NEXT_PUBLIC_GITHUB_CLIENT_SECRET as string,
+      authorization: {
+        params: { scope: "public_repo" },
+      },
     }),
   ],
   callbacks: {

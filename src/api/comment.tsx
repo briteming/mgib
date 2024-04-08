@@ -48,8 +48,6 @@ export const fetchComments = async (
       'X-GitHub-Api-Version': '2022-11-28'
     }
   })
-  console.log('fetchComments')
-  console.log(response.data)
   // Transform each comment in the response
   return response.data.map((comment: any) => transformApiResponseToComment(comment));
 };

@@ -16,8 +16,8 @@ type GitHubClient = {
  */
 export const createGitHubClient = (token: string): GitHubClient => {
   const octokit = new Octokit({ auth: token });
-  const owner = process.env.GITHUB_OWNER!;
-  const repo = process.env.GITHUB_REPO!;
+  const owner = process.env.NEXT_PUBLIC_GITHUB_OWNER!;
+  const repo = process.env.NEXT_PUBLIC_GITHUB_REPO!;
   
   return { octokit, owner, repo };
 };
